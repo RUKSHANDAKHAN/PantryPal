@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>7-Day Meal Planner – Pantry Pal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green-deep:#1B4332; --green-mid:#2D6A4F; --green-fresh:#52B788;
+      --cream:#FEFAE0; --gold:#E9C46A; --white:#FFFFFF;
+      --text:#1A1A2E; --muted:#6B7280; --border:#D8F3DC;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--cream); font-family:'DM Sans',sans-serif; color:var(--text); }
+
+    nav {
+      background:var(--green-deep); padding:0 2rem; height:68px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:100;
+    }
+    .nav-logo { font-family:'Playfair Display',serif; font-size:1.5rem; color:var(--green-fresh); text-decoration:none; }
+    .nav-logo span { color:var(--gold); }
+    .nav-links { display:flex; gap:0.5rem; }
+    .nav-links a { color:#a8d8b9; text-decoration:none; padding:0.4rem 0.85rem; border-radius:8px; font-size:0.88rem; }
+    .nav-links a:hover, .nav-links a.active { background:rgba(82,183,136,0.15); color:var(--green-fresh); }
+
+    .page-hero {
+      background:linear-gradient(135deg, var(--green-deep), var(--green-mid));
+      padding:3rem 2rem 2.5rem; text-align:center;
+    }
+    .page-hero h1 { font-family:'Playfair Display',serif; font-size:2.2rem; color:var(--white); margin-bottom:0.5rem; }
+    .page-hero p { color:#b7e4c7; font-size:0.95rem; }
+
+    .container { max-width:860px; margin:2.5rem auto; padding:0 1.5rem 4rem; }
+
+    .feature-row {
+      display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
+      gap:1rem; margin-bottom:2rem;
+    }
+    .feature-mini {
+      background:var(--white); border:1px solid var(--border);
+      border-radius:14px; padding:1.2rem; text-align:center;
+    }
+    .feature-mini .icon { font-size:1.8rem; margin-bottom:0.5rem; }
+    .feature-mini h4 { font-size:0.88rem; font-weight:700; margin-bottom:0.25rem; }
+    .feature-mini p { font-size:0.78rem; color:var(--muted); }
+
+    .form-card {
+      background:var(--white); border-radius:20px; overflow:hidden;
+      border:1px solid var(--border); margin-bottom:2rem;
+      box-shadow:0 4px 20px rgba(0,0,0,0.06);
+    }
+    .form-header {
+      background:var(--green-deep); padding:1.2rem 1.8rem;
+      color:var(--green-fresh); font-family:'Playfair Display',serif; font-size:1.15rem;
+    }
+    .form-body { padding:1.8rem; display:flex; flex-direction:column; gap:1.4rem; }
+
+    label { font-size:0.82rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.4rem; }
+    label em { color:var(--green-fresh); font-style:normal; }
+
+    textarea, select {
+      width:100%; background:#f9fafb; border:1.5px solid var(--border);
+      border-radius:10px; padding:0.8rem 1rem; font-size:0.9rem;
+      font-family:'DM Sans',sans-serif; color:var(--text); outline:none;
+      transition:border-color 0.2s;
+    }
+    textarea:focus, select:focus { border-color:var(--green-fresh); background:var(--white); }
+
+    .filters-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .hint { font-size:0.78rem; color:#9CA3AF; margin-top:0.4rem; }
+
+    .form-footer {
+      padding:1.2rem 1.8rem; border-top:1px solid var(--border);
+      background:#f9fafb; display:flex; align-items:center; gap:1rem;
+    }
+    .btn-submit {
+      background:var(--green-fresh); color:var(--green-deep);
+      border:none; padding:0.8rem 2rem; border-radius:10px;
+      font-size:0.95rem; font-weight:700; cursor:pointer; transition:all 0.2s;
+      font-family:'DM Sans',sans-serif;
+    }
+    .btn-submit:hover { background:#74c69d; transform:translateY(-1px); }
+    .btn-submit:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
+
+    .loading-bar {
+      display:none; align-items:center; gap:0.75rem;
+      color:var(--muted); font-size:0.88rem;
+    }
+    .spinner {
+      width:20px; height:20px; border:3px solid var(--border);
+      border-top-color:var(--green-fresh); border-radius:50%;
+      animation:spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* RESULT CARD */
+    .result-card {
+      background:var(--white); border-radius:20px; overflow:hidden;
+      border:1px solid var(--border); box-shadow:0 4px 20px rgba(0,0,0,0.06);
+      animation:fadeUp 0.5s ease;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+    .result-header {
+      background:linear-gradient(135deg, var(--green-mid), var(--green-fresh));
+      padding:1.2rem 1.8rem; color:var(--white);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .result-header h2 { font-family:'Playfair Display',serif; font-size:1.2rem; }
+    .ai-badge {
+      background:rgba(255,255,255,0.2); padding:0.2rem 0.7rem;
+      border-radius:50px; font-size:0.72rem; font-weight:700;
+    }
+    .result-body {
+      padding:2rem 1.8rem; white-space:normal;
+      font-size:0.93rem; line-height:1.9; color:#374151;
+    }
+    .result-actions {
+      padding:1rem 1.8rem; border-top:1px solid var(--border);
+      background:#f9fafb; display:flex; gap:1rem;
+    }
+    .btn-print {
+      background:var(--green-deep); color:var(--white);
+      border:none; padding:0.6rem 1.3rem; border-radius:8px;
+      font-weight:700; font-size:0.85rem; cursor:pointer;
+      font-family:'DM Sans',sans-serif;
+    }
+    .btn-replan {
+      background:transparent; color:var(--green-mid);
+      border:1.5px solid var(--border); padding:0.6rem 1.3rem;
+      border-radius:8px; font-weight:700; font-size:0.85rem;
+      text-decoration:none; display:inline-block;
+    }
+
+    /* ── SHOPPING LIST ── */
+    .shop-section {
+      margin-top: 2.5rem;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 24px rgba(27,67,50,0.08);
+    }
+    .shop-header {
+      background: var(--green-deep);
+      padding: 1.4rem 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .shop-header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .shop-icon-wrap {
+      width: 46px; height: 46px;
+      background: rgba(82,183,136,0.15);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .shop-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      color: var(--white);
+      font-weight: 700;
+    }
+    .shop-subtitle {
+      font-size: 0.78rem;
+      color: #74c69d;
+      margin-top: 0.15rem;
+    }
+    .shop-count-badge {
+      background: var(--green-fresh);
+      color: var(--green-deep);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+    }
+    .shop-body {
+      background: var(--white);
+      padding: 1.6rem 1.8rem;
+    }
+    .shop-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .shop-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid #f0faf4;
+      transition: background 0.15s;
+    }
+    .shop-item:last-child { border-bottom: none; }
+    .shop-item:hover { background: #f9fefb; border-radius: 10px; padding-left: 0.5rem; }
+    .shop-checkbox {
+      width: 22px; height: 22px; min-width: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--green-fresh);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+    .shop-checkbox.checked {
+      background: var(--green-fresh);
+      border-color: var(--green-fresh);
+    }
+    .shop-checkbox.checked::after {
+      content: '';
+      width: 5px; height: 9px;
+      border: 2px solid white;
+      border-top: none; border-left: none;
+      transform: rotate(45deg) translateY(-1px);
+      display: block;
+    }
+    .shop-item-name {
+      font-size: 0.93rem;
+      color: var(--text);
+      font-weight: 500;
+      flex: 1;
+      transition: all 0.2s;
+    }
+    .shop-item-name.done {
+      text-decoration: line-through;
+      color: #9CA3AF;
+    }
+    .shop-item-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green-fresh);
+      opacity: 0.5;
+    }
+    .shop-footer {
+      background: #f9fafb;
+      border-top: 1px solid var(--border);
+      padding: 1rem 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .shop-progress-wrap {
+      flex: 1;
+      margin-right: 1.5rem;
+    }
+    .shop-progress-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      display: flex;
+      justify-content: space-between;
+    }
+    .shop-progress-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 50px;
+      overflow: hidden;
+    }
+    .shop-progress-fill {
+      height: 100%;
+      background: var(--green-fresh);
+      border-radius: 50px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    .btn-clear {
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+    }
+    .btn-clear:hover { border-color: #f87171; color: #ef4444; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">🥬 Pantry<span>Pal</span></a>
+  <div class="nav-links">
+    <a href="/">🏠 Home</a>
+    <a href="/pantry">🧺 My Pantry</a>
+    <a href="/planner" class="active">📅 Meal Planner</a>
+    <a href="/expiry">⏰ Expiry Tracker</a>
+    <a href="/recipes">📖 Recipes</a>
+    <a href="/favorites">❤️ Favourites</a>
+    <a href="/gallery">📸 My Gallery</a>
+    <a href="/add" class="nav-cta">+ Add Recipe</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>📅 7-Day Meal Planner</h1>
+  <p>Let AI plan your entire week — breakfast, lunch and dinner included</p>
+</div>
+
+<div class="container">
+
+  <div class="feature-row">
+    <div class="feature-mini">
+      <div class="icon">🍽️</div>
+      <h4>21 Meals Planned</h4>
+      <p>Breakfast, lunch & dinner for 7 days</p>
+    </div>
+    <div class="feature-mini">
+      <div class="icon">🛒</div>
+      <h4>Shopping List</h4>
+      <p>Auto-generated for the whole week</p>
+    </div>
+    <div class="feature-mini">
+      <div class="icon">♻️</div>
+      <h4>Waste-Aware</h4>
+      <p>Prioritises your expiring ingredients</p>
+    </div>
+    <div class="feature-mini">
+      <div class="icon">🌍</div>
+      <h4>Any Cuisine</h4>
+      <p>Indian, Chinese, Continental or mixed</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-header">⚙️ Customise Your Meal Plan</div>
+    <form id="plannerForm">
+      <div class="form-body">
+        <div class="filters-row">
+          <div>
+            <label><em>👨‍👩‍👧</em> Number of People</label>
+            <select name="people">
+              <option value="1">1 Person</option>
+              <option value="2" selected>2 People</option>
+              <option value="3">3 People</option>
+              <option value="4">4 People</option>
+              <option value="5+">5+ People</option>
+            </select>
+          </div>
+          <div>
+            <label><em>🌍</em> Cuisine Mix</label>
+            <select name="cuisine_mix">
+              <option value="Mixed">Mixed (All cuisines)</option>
+              <option value="Indian">🇮🇳 Indian Only</option>
+              <option value="Chinese">🇨🇳 Chinese Only</option>
+              <option value="Continental">🌍 Continental Only</option>
+              <option value="Indian and Continental">Indian + Continental</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label><em>📝</em> Dietary Preferences or Notes (optional)</label>
+          <textarea name="preferences" rows="3"
+            placeholder="e.g. Vegetarian, no nuts, prefer light meals for breakfast, love spicy food..."></textarea>
+          <p class="hint">Tell us anything — allergies, dietary restrictions, favourite foods</p>
+        </div>
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn-submit" id="submitBtn">
+          📅 Generate My 7-Day Plan
+        </button>
+        <div class="loading-bar" id="loadingBar">
+          <div class="spinner"></div>
+          <span id="loadingMsg">🍽️ Building your perfect week...</span>
+        </div>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<script>
+
+  /* ── FORMAT FUNCTION ── */
+  function formatMealPlan(text) {
+    const parts = text.split(/shopping list/i);
+
+    let mainPlan = parts[0]
+      .replace(/^(Day \d+[:\-]?.*)/gmi, '<strong>$1</strong>')
+      .replace(/\b(Breakfast)\b/gi, '<strong>Breakfast</strong>')
+      .replace(/\b(Lunch)\b/gi, '<strong>Lunch</strong>')
+      .replace(/\b(Dinner)\b/gi, '<strong>Dinner</strong>')
+      .replace(/\n/g, '<br>');
+
+    let shoppingHTML = '';
+    if (parts[1]) {
+      const items = parts[1]
+  .split('\n')
+  .map(line => line.replace(/^[\s\-\*\d\.#\:]+/, '').trim())
+  .filter(line => line.length > 3)          // skip blank or very short lines
+  .filter(line => !/^(shopping list|note|week|here)/i.test(line)); // skip header-like lines
+
+      const listItems = items.map((item, idx) => `
+        <li class="shop-item" id="item-${idx}">
+          <div class="shop-checkbox" onclick="toggleItem(${idx})"></div>
+          <span class="shop-item-name" id="name-${idx}">${item}</span>
+          <div class="shop-item-dot"></div>
+        </li>
+      `).join('');
+
+      shoppingHTML = `
+        <div class="shop-section" id="shopSection">
+          <div class="shop-header">
+            <div class="shop-header-left">
+              <div class="shop-icon-wrap">🛍️</div>
+              <div>
+                <div class="shop-title">Shopping List</div>
+                <div class="shop-subtitle">Tap items to check them off</div>
+              </div>
+            </div>
+            <div class="shop-count-badge" id="shopBadge">${items.length} items</div>
+          </div>
+          <div class="shop-body">
+            <ul class="shop-list" id="shopList">
+              ${listItems}
+            </ul>
+          </div>
+          <div class="shop-footer">
+            <div class="shop-progress-wrap">
+              <div class="shop-progress-label">
+                <span>Progress</span>
+                <span id="progressLabel">0 / ${items.length} done</span>
+              </div>
+              <div class="shop-progress-bar">
+                <div class="shop-progress-fill" id="progressFill"></div>
+              </div>
+            </div>
+            <button class="btn-clear" onclick="clearAll()">↺ Reset</button>
+          </div>
+        </div>
+      `;
+
+      window._shopTotal = items.length;
+      window._shopChecked = 0;
+    }
+
+    return mainPlan + shoppingHTML;
+  }
+
+  /* ── CHECKBOX TOGGLE ── */
+  function toggleItem(idx) {
+    const box = document.querySelector(`#item-${idx} .shop-checkbox`);
+    const name = document.getElementById(`name-${idx}`);
+    const isChecked = box.classList.toggle('checked');
+    name.classList.toggle('done', isChecked);
+    window._shopChecked = isChecked
+      ? window._shopChecked + 1
+      : window._shopChecked - 1;
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const total = window._shopTotal || 0;
+    const done = window._shopChecked || 0;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const fill = document.getElementById('progressFill');
+    const label = document.getElementById('progressLabel');
+    const badge = document.getElementById('shopBadge');
+    if (fill) fill.style.width = pct + '%';
+    if (label) label.textContent = `${done} / ${total} done`;
+    if (badge) badge.textContent = `${total - done} remaining`;
+  }
+
+  function clearAll() {
+    document.querySelectorAll('.shop-checkbox').forEach(b => b.classList.remove('checked'));
+    document.querySelectorAll('.shop-item-name').forEach(n => n.classList.remove('done'));
+    window._shopChecked = 0;
+    updateProgress();
+  }
+
+  /* ── FORM SUBMIT ── */
+  document.getElementById('plannerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('submitBtn');
+    const bar = document.getElementById('loadingBar');
+    const span = document.getElementById('loadingMsg');
+
+    btn.disabled = true;
+    btn.textContent = 'Planning...';
+    bar.style.display = 'flex';
+
+    const messages = [
+      '🍽️ Building your perfect week...',
+      '🥗 Finding healthy recipes...',
+      '🛒 Creating your shopping list...',
+      '♻️ Checking for waste reduction...',
+      '📅 Almost ready...'
+    ];
+    let i = 0;
+    const interval = setInterval(() => {
+      span.textContent = messages[i % messages.length];
+      i++;
+    }, 3000);
+
+    try {
+      const formData = new FormData(this);
+      const res = await fetch('/planner/generate', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      clearInterval(interval);
+      bar.style.display = 'none';
+      btn.disabled = false;
+      btn.textContent = '📅 Generate My 7-Day Plan';
+
+      if (data.error) {
+        alert('Error: ' + data.error);
+      } else {
+        let resultCard = document.getElementById('resultCard');
+        if (!resultCard) {
+          resultCard = document.createElement('div');
+          resultCard.id = 'resultCard';
+          resultCard.className = 'result-card';
+          document.querySelector('.container').appendChild(resultCard);
+        }
+        resultCard.innerHTML = `
+          <div class="result-header">
+            <h2>🗓️ Your Personalised 7-Day Meal Plan</h2>
+            <span class="ai-badge">🤖 AI Generated</span>
+          </div>
+          <div class="result-body">${formatMealPlan(data.meal_plan)}</div>
+          <div class="result-actions">
+            <button class="btn-print" onclick="window.print()">🖨️ Print Plan</button>
+            <a href="/planner" class="btn-replan">↺ Generate New Plan</a>
+          </div>`;
+        resultCard.scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch (err) {
+      clearInterval(interval);
+      bar.style.display = 'none';
+      btn.disabled = false;
+      btn.textContent = '📅 Generate My 7-Day Plan';
+      alert('Something went wrong. Please try again.');
+    }
+  });
+
+</script>
+</body>
+</html>

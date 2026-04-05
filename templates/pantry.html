@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pantry to Plate – Pantry Pal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green-deep:#1B4332; --green-mid:#2D6A4F; --green-fresh:#52B788;
+      --cream:#FEFAE0; --gold:#E9C46A; --white:#FFFFFF;
+      --text:#1A1A2E; --muted:#6B7280; --border:#D8F3DC;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--cream); font-family:'DM Sans',sans-serif; color:var(--text); }
+
+    nav {
+      background:var(--green-deep); padding:0 2rem; height:68px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:100;
+    }
+    .nav-logo { font-family:'Playfair Display',serif; font-size:1.5rem; color:var(--green-fresh); text-decoration:none; }
+    .nav-logo span { color:var(--gold); }
+    .nav-links { display:flex; gap:0.5rem; }
+    .nav-links a { color:#a8d8b9; text-decoration:none; padding:0.4rem 0.85rem; border-radius:8px; font-size:0.88rem; }
+    .nav-links a:hover, .nav-links a.active { background:rgba(82,183,136,0.15); color:var(--green-fresh); }
+
+    .page-hero {
+      background:linear-gradient(135deg, var(--green-deep), var(--green-mid));
+      padding:3rem 2rem 2.5rem; text-align:center;
+    }
+    .page-hero h1 { font-family:'Playfair Display',serif; font-size:2.2rem; color:var(--white); margin-bottom:0.5rem; }
+    .page-hero p { color:#b7e4c7; font-size:0.95rem; }
+
+    .container { max-width:860px; margin:2.5rem auto; padding:0 1.5rem 4rem; }
+
+    .input-card {
+      background:var(--white); border-radius:20px; overflow:hidden;
+      border:1px solid var(--border); margin-bottom:2rem;
+      box-shadow:0 4px 20px rgba(0,0,0,0.06);
+    }
+    .input-card-header {
+      background:var(--green-deep); padding:1.2rem 1.8rem;
+      color:var(--green-fresh); font-family:'Playfair Display',serif; font-size:1.15rem;
+    }
+    .input-body { padding:1.8rem; display:flex; flex-direction:column; gap:1.4rem; }
+
+    label { font-size:0.82rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.4rem; }
+    label em { color:var(--green-fresh); font-style:normal; }
+
+    textarea, select {
+      width:100%; background:#f9fafb; border:1.5px solid var(--border);
+      border-radius:10px; padding:0.8rem 1rem; font-size:0.95rem;
+      font-family:'DM Sans',sans-serif; color:var(--text); outline:none;
+      transition:border-color 0.2s, box-shadow 0.2s;
+    }
+    textarea:focus, select:focus {
+      border-color:var(--green-fresh); box-shadow:0 0 0 3px rgba(82,183,136,0.15);
+      background:var(--white);
+    }
+    .hint { font-size:0.78rem; color:#9CA3AF; margin-top:0.4rem; }
+    .filters-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+
+    .input-footer {
+      padding:1.2rem 1.8rem; border-top:1px solid var(--border);
+      background:#f9fafb; display:flex; align-items:center; gap:1rem;
+    }
+    .btn-submit {
+      background:var(--green-fresh); color:var(--green-deep);
+      border:none; padding:0.8rem 2rem; border-radius:10px;
+      font-size:0.95rem; font-weight:700; font-family:'DM Sans',sans-serif;
+      cursor:pointer; transition:all 0.2s;
+    }
+    .btn-submit:hover { background:#74c69d; transform:translateY(-1px); }
+    .btn-submit:disabled { background:#a8d8b9; cursor:not-allowed; transform:none; }
+
+    .quick-chips { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.6rem; }
+    .chip {
+      background:#F0FDF4; border:1px solid var(--border); color:var(--green-mid);
+      padding:0.3rem 0.8rem; border-radius:50px; font-size:0.8rem; cursor:pointer;
+      transition:all 0.2s; font-weight:500;
+    }
+    .chip:hover { background:var(--green-fresh); color:var(--white); border-color:var(--green-fresh); }
+
+    /* LOADING OVERLAY */
+    .loading-overlay {
+      display:none; position:fixed; inset:0;
+      background:rgba(27,67,50,0.85); z-index:999;
+      flex-direction:column; align-items:center; justify-content:center; gap:1.5rem;
+    }
+    .loading-overlay.show { display:flex; }
+    .spinner {
+      width:70px; height:70px;
+      border:6px solid rgba(255,255,255,0.15);
+      border-top-color:var(--green-fresh);
+      border-radius:50%; animation:spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-emoji { font-size:2.5rem; animation:bounce 1s ease-in-out infinite; }
+    @keyframes bounce {
+      0%,100% { transform:translateY(0); }
+      50% { transform:translateY(-10px); }
+    }
+    .loading-title { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--white); font-weight:700; }
+    .loading-sub { color:#b7e4c7; font-size:0.9rem; }
+    .loading-dots span {
+      display:inline-block; width:8px; height:8px;
+      background:var(--green-fresh); border-radius:50%; margin:0 3px;
+      animation:dotPulse 1.2s ease-in-out infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay:0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay:0.4s; }
+    @keyframes dotPulse {
+      0%,80%,100% { transform:scale(0.6); opacity:0.4; }
+      40% { transform:scale(1); opacity:1; }
+    }
+
+    /* AI RESULT CARD */
+    .result-card {
+      background:linear-gradient(135deg,#1B4332,#2D6A4F);
+      border-radius:20px; overflow:hidden;
+      border:1px solid #2D6A4F;
+      box-shadow:0 8px 32px rgba(27,67,50,0.25);
+      animation:fadeUp 0.5s ease;
+      margin-bottom:2rem;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+    .result-header {
+      background:rgba(0,0,0,0.2); padding:1.2rem 1.8rem;
+      display:flex; align-items:center; justify-content:space-between;
+      border-bottom:1px solid rgba(255,255,255,0.1); flex-wrap:wrap; gap:0.75rem;
+    }
+    .result-header-left { display:flex; align-items:center; gap:0.75rem; }
+    .result-header h2 { font-family:'Playfair Display',serif; font-size:1.2rem; color:#52B788; }
+    .ai-badge {
+      background:rgba(82,183,136,0.2); padding:0.2rem 0.7rem;
+      border-radius:50px; font-size:0.72rem; font-weight:700;
+      color:#52B788; border:1px solid rgba(82,183,136,0.3);
+    }
+
+    /* SHARE BUTTONS */
+    .share-btns { display:flex; gap:0.5rem; flex-wrap:wrap; }
+    .btn-share {
+      padding:0.4rem 0.9rem; border-radius:8px; font-size:0.78rem;
+      font-weight:700; border:none; cursor:pointer;
+      font-family:'DM Sans',sans-serif; transition:all 0.2s;
+    }
+    .btn-copy { background:rgba(255,255,255,0.15); color:var(--white); }
+    .btn-copy:hover { background:rgba(255,255,255,0.25); }
+    .btn-whatsapp { background:#25D366; color:var(--white); }
+    .btn-whatsapp:hover { background:#1ebe5d; }
+
+    /* RESULT BODY */
+    .result-body { padding:1.8rem; }
+
+    /* Recipe block styling */
+    .recipe-block {
+      margin-bottom:1.5rem;
+      padding-bottom:1.5rem;
+      border-bottom:1px solid rgba(255,255,255,0.1);
+    }
+    .recipe-block:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+
+    .recipe-name {
+      font-family:'Playfair Display',serif;
+      font-size:1.15rem; color:#52B788;
+      margin-bottom:0.8rem;
+      padding-bottom:0.5rem;
+      border-bottom:1px solid rgba(82,183,136,0.3);
+    }
+    .recipe-row {
+      display:flex; gap:0.5rem;
+      margin-bottom:0.4rem;
+      align-items:flex-start;
+      color:#d1fae5; font-size:0.9rem; line-height:1.6;
+    }
+    .recipe-label {
+      font-weight:700; color:#E9C46A;
+      white-space:nowrap; flex-shrink:0;
+    }
+    .recipe-tip {
+      background:rgba(0,0,0,0.2);
+      border-left:3px solid #52B788;
+      border-radius:0 8px 8px 0;
+      padding:0.6rem 0.9rem;
+      margin-top:0.5rem;
+      color:#d1fae5; font-size:0.88rem; line-height:1.6;
+    }
+    .recipe-steps { margin-top:0.4rem; }
+    .recipe-step {
+      display:flex; gap:0.75rem;
+      margin-bottom:0.35rem;
+      align-items:flex-start;
+      color:#d1fae5; font-size:0.9rem; line-height:1.6;
+    }
+    .step-num-badge {
+      background:rgba(82,183,136,0.3);
+      color:#52B788; font-weight:700;
+      font-size:0.75rem; min-width:22px; height:22px;
+      border-radius:50%; display:flex;
+      align-items:center; justify-content:center;
+      flex-shrink:0; margin-top:2px;
+    }
+
+    /* TIPS ROW */
+    .tips-row {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:1rem; margin-bottom:2rem;
+    }
+    .tip-card {
+      background:var(--white); border:1px solid var(--border);
+      border-radius:14px; padding:1.2rem; display:flex; gap:0.8rem; align-items:flex-start;
+    }
+    .tip-icon { font-size:1.5rem; flex-shrink:0; }
+    .tip-card h4 { font-size:0.88rem; font-weight:700; margin-bottom:0.3rem; }
+    .tip-card p { font-size:0.8rem; color:var(--muted); line-height:1.5; }
+
+    /* TOAST */
+    .toast {
+      position:fixed; bottom:2rem; left:50%; transform:translateX(-50%);
+      background:#1B4332; color:#52B788; padding:0.75rem 1.5rem;
+      border-radius:50px; font-size:0.88rem; font-weight:700;
+      box-shadow:0 4px 20px rgba(0,0,0,0.2); z-index:9999;
+      opacity:0; transition:opacity 0.3s; pointer-events:none;
+    }
+    .toast.show { opacity:1; }
+  </style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ Copied to clipboard!</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <span class="loading-emoji">🍳</span>
+  <div class="spinner"></div>
+  <div class="loading-title">AI is cooking up ideas...</div>
+  <div class="loading-sub">Finding the best recipes for you</div>
+  <div class="loading-dots"><span></span><span></span><span></span></div>
+</div>
+
+<nav>
+  <a href="/" class="nav-logo">🥬 Pantry<span>Pal</span></a>
+  <div class="nav-links">
+    <a href="/">🏠 Home</a>
+    <a href="/pantry" class="active">🧺 My Pantry</a>
+    <a href="/planner">📅 Meal Planner</a>
+    <a href="/expiry">⏰ Expiry Tracker</a>
+    <a href="/recipes">📖 Recipes</a>
+    <a href="/favorites">❤️ Favourites</a>
+    <a href="/gallery">📸 My Gallery</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>🧺 Pantry to Plate</h1>
+  <p>Tell us what you have — AI will tell you what to cook</p>
+</div>
+
+<div class="container">
+
+  <!-- TIPS -->
+  <div class="tips-row">
+    <div class="tip-card">
+      <span class="tip-icon">🥗</span>
+      <div><h4>Enter any ingredients</h4><p>From fridge leftovers to pantry staples — anything works!</p></div>
+    </div>
+    <div class="tip-card">
+      <span class="tip-icon">🤖</span>
+      <div><h4>AI finds the best match</h4><p>AI suggests recipes that use most of what you have</p></div>
+    </div>
+    <div class="tip-card">
+      <span class="tip-icon">♻️</span>
+      <div><h4>Waste less food</h4><p>Every suggestion comes with a food waste reduction tip</p></div>
+    </div>
+  </div>
+
+  <!-- SMART SUBSTITUTIONS -->
+  <div class="input-card">
+    <div class="input-card-header">🔄 Smart Ingredient Substitutions</div>
+    <div class="input-body">
+      <div class="filters-row">
+        <div>
+          <label><em>❓</em> Ingredient you don't have</label>
+          <input type="text" id="subIngredient"
+            placeholder="e.g. cream, butter, eggs, paneer..."
+            style="width:100%;background:#f9fafb;border:1.5px solid var(--border);border-radius:10px;padding:0.8rem 1rem;font-size:0.95rem;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;"/>
+        </div>
+        <div>
+          <label><em>🍳</em> What are you making? (optional)</label>
+          <input type="text" id="subDish"
+            placeholder="e.g. butter chicken, pasta, cake..."
+            style="width:100%;background:#f9fafb;border:1.5px solid var(--border);border-radius:10px;padding:0.8rem 1rem;font-size:0.95rem;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;"/>
+        </div>
+      </div>
+      <button onclick="getSubstitutes()" id="subBtn" style="background:var(--green-fresh);color:var(--green-deep);border:none;padding:0.8rem 2rem;border-radius:10px;font-size:0.95rem;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;width:fit-content;">
+        🔄 Find Substitutes
+      </button>
+      <div id="subResult" style="display:none;">
+        <div style="background:linear-gradient(135deg,#1B4332,#2D6A4F);border-radius:14px;padding:1.5rem;">
+          <div style="color:#52B788;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:1rem;">✨ Here are your substitutes</div>
+          <div id="subContent" style="color:#f0faf4;font-size:0.92rem;line-height:1.8;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUT FORM -->
+  <div class="input-card">
+    <div class="input-card-header">🧾 What's in your kitchen?</div>
+    <form method="POST" action="/pantry" id="pantryForm">
+      <div class="input-body">
+        <div>
+          <label><em>🥬</em> Your Ingredients</label>
+          <textarea name="ingredients" rows="4"
+            placeholder="e.g. eggs, tomatoes, onions, cheese, bread, garlic, chicken..."
+            required>{{ ingredients_input }}</textarea>
+          <p class="hint">Separate with commas. Don't worry if it's a small list!</p>
+          <div class="quick-chips">
+            <span class="chip" onclick="addIngredient('eggs')">🥚 eggs</span>
+            <span class="chip" onclick="addIngredient('rice')">🍚 rice</span>
+            <span class="chip" onclick="addIngredient('chicken')">🍗 chicken</span>
+            <span class="chip" onclick="addIngredient('tomatoes')">🍅 tomatoes</span>
+            <span class="chip" onclick="addIngredient('onion')">🧅 onion</span>
+            <span class="chip" onclick="addIngredient('garlic')">🧄 garlic</span>
+            <span class="chip" onclick="addIngredient('pasta')">🍝 pasta</span>
+            <span class="chip" onclick="addIngredient('paneer')">🧀 paneer</span>
+          </div>
+        </div>
+        <div class="filters-row">
+          <div>
+            <label><em>🌍</em> Cuisine Preference</label>
+            <select name="cuisine_pref">
+              <option value="Any">Any Cuisine</option>
+              <option value="Indian">🇮🇳 Indian</option>
+              <option value="Chinese">🇨🇳 Chinese</option>
+              <option value="Continental">🌍 Continental</option>
+            </select>
+          </div>
+          <div>
+            <label><em>🕐</em> Meal Type</label>
+            <select name="meal_type">
+              <option value="Any">Any Meal</option>
+              <option value="Breakfast">🌅 Breakfast</option>
+              <option value="Lunch">☀️ Lunch</option>
+              <option value="Dinner">🌙 Dinner</option>
+              <option value="Snack">🍿 Snack</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="input-footer">
+        <button type="submit" class="btn-submit" id="submitBtn">
+          🤖 Get AI Recipe Suggestions
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- AI RESULTS -->
+  {% if suggestions %}
+  <div class="result-card">
+    <div class="result-header">
+      <div class="result-header-left">
+        <h2>✨ Your Personalised Recipes</h2>
+        <span class="ai-badge">🤖 AI Generated</span>
+      </div>
+      <div class="share-btns">
+        <button class="btn-share btn-copy" onclick="copyRecipes()">📋 Copy</button>
+        <button class="btn-share btn-whatsapp" onclick="shareWhatsApp()">💬 WhatsApp</button>
+      </div>
+    </div>
+    <div class="result-body" id="suggestionBody"></div>
+  </div>
+  <div id="rawSuggestion" style="display:none">{{ suggestions }}</div>
+  {% endif %}
+
+</div>
+
+<script>
+  /* ── INGREDIENT CHIPS ── */
+  function addIngredient(item) {
+    const textarea = document.querySelector('textarea[name="ingredients"]');
+    const current = textarea.value.trim();
+    textarea.value = current ? current + ', ' + item : item;
+    textarea.focus();
+  }
+
+  /* ── LOADING OVERLAY ── */
+  document.getElementById('pantryForm').addEventListener('submit', function() {
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('loadingOverlay').classList.add('show');
+    const messages = [
+      'AI is cooking up ideas... 🍳',
+      'Finding recipes for you... 🥘',
+      'Almost ready... 🍽️',
+      'Just a few more seconds... ⏳'
+    ];
+    const titleEl = document.querySelector('.loading-title');
+    let i = 0;
+    setInterval(() => {
+      i = (i + 1) % messages.length;
+      titleEl.textContent = messages[i];
+    }, 2000);
+  });
+
+  /* ── FORMAT SUGGESTIONS LINE BY LINE ── */
+  function formatSuggestions(raw) {
+    const lines = raw.split('\n');
+    let html = '';
+    let inBlock = false;
+    let inSteps = false;
+
+    lines.forEach(function(line) {
+      line = line.trim();
+      if (!line) return;
+
+      if (line.startsWith('---')) {
+        if (inBlock) { html += '</div>'; inBlock = false; }
+        inSteps = false;
+        return;
+      }
+
+      if (line.startsWith('🍽️')) {
+        if (inBlock) html += '</div>';
+        inBlock = true;
+        inSteps = false;
+        html += '<div class="recipe-block">';
+        html += '<div class="recipe-name">' + line + '</div>';
+
+      } else if (line.startsWith('⏱️')) {
+        inSteps = false;
+        html += '<div class="recipe-row"><span class="recipe-label">⏱️ Time:</span><span>' + line.replace(/⏱️\s*Time:\s*/i, '') + '</span></div>';
+
+      } else if (line.startsWith('🥘')) {
+        inSteps = false;
+        html += '<div class="recipe-row"><span class="recipe-label">🥘 Use:</span><span>' + line.replace(/🥘\s*Use:\s*/i, '') + '</span></div>';
+
+      } else if (line.startsWith('➕')) {
+        inSteps = false;
+        html += '<div class="recipe-row"><span class="recipe-label">➕ Extra:</span><span>' + line.replace(/➕\s*Extra:\s*/i, '') + '</span></div>';
+
+      } else if (line.startsWith('📝')) {
+        inSteps = true;
+        html += '<div class="recipe-row"><span class="recipe-label">📝 Steps:</span></div>';
+        html += '<div class="recipe-steps">';
+
+      } else if (line.startsWith('♻️')) {
+        if (inSteps) { html += '</div>'; inSteps = false; }
+        html += '<div class="recipe-tip"><strong style="color:#52B788;">♻️ Tip:</strong> ' + line.replace(/♻️\s*Tip:\s*/i, '') + '</div>';
+
+      } else if (/^\d+\./.test(line) && inSteps) {
+        const num = line.match(/^(\d+)\./)[1];
+        const text = line.replace(/^\d+\.\s*/, '');
+        html += '<div class="recipe-step"><span class="step-num-badge">' + num + '</span><span>' + text + '</span></div>';
+
+      } else {
+        html += '<div style="color:#d1fae5;font-size:0.9rem;margin:0.2rem 0;">' + line + '</div>';
+      }
+    });
+
+    if (inSteps) html += '</div>';
+    if (inBlock) html += '</div>';
+    return html;
+  }
+
+  /* ── RENDER SUGGESTIONS ── */
+  var rawEl = document.getElementById('rawSuggestion');
+  if (rawEl) {
+    var raw = rawEl.innerText;
+    document.getElementById('suggestionBody').innerHTML = formatSuggestions(raw);
+  }
+
+  /* ── SHARE FEATURES ── */
+  function showToast(msg) {
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 2500);
+  }
+
+  function copyRecipes() {
+    var rawEl = document.getElementById('rawSuggestion');
+    if (!rawEl) return;
+    var text = rawEl.innerText;
+    navigator.clipboard.writeText(text).then(function() {
+      showToast('✅ Recipes copied to clipboard!');
+    }).catch(function() {
+      showToast('❌ Could not copy. Try again.');
+    });
+  }
+
+  function shareWhatsApp() {
+    var rawEl = document.getElementById('rawSuggestion');
+    if (!rawEl) return;
+    var text = rawEl.innerText;
+    var short = text.substring(0, 500) + '...\n\nGenerated by PantryPal 🥬';
+    var url = 'https://wa.me/?text=' + encodeURIComponent(short);
+    window.open(url, '_blank');
+  }
+
+  /* ── SMART SUBSTITUTIONS ── */
+  async function getSubstitutes() {
+    var ingredient = document.getElementById('subIngredient').value.trim();
+    var dish = document.getElementById('subDish').value.trim();
+    var btn = document.getElementById('subBtn');
+    var resultDiv = document.getElementById('subResult');
+    var content = document.getElementById('subContent');
+
+    if (!ingredient) {
+      alert('Please enter an ingredient you want to substitute!');
+      return;
+    }
+
+    btn.textContent = '⏳ Finding substitutes...';
+    btn.disabled = true;
+
+    try {
+      var formData = new FormData();
+      formData.append('ingredient', ingredient);
+      formData.append('dish', dish);
+
+      var res = await fetch('/substitute', { method: 'POST', body: formData });
+      var data = await res.json();
+
+      var lines = data.result.split('\n');
+      var html = '';
+      lines.forEach(function(line) {
+        line = line.trim();
+        if (!line) return;
+        if (line.startsWith('✅')) {
+          html += '<div style="margin-top:1rem;font-weight:700;font-size:1rem;color:#52B788;">' + line + '</div>';
+        } else if (line.startsWith('📏')) {
+          html += '<div style="margin:0.3rem 0;"><strong style="color:#E9C46A;">📏 Use:</strong> ' + line.replace(/📏\s*Use:\s*/i,'') + '</div>';
+        } else if (line.startsWith('🍽️')) {
+          html += '<div style="margin:0.3rem 0;"><strong style="color:#E9C46A;">🍽️ Works best for:</strong> ' + line.replace(/🍽️\s*Works best for:\s*/i,'') + '</div>';
+        } else if (line.startsWith('⚠️')) {
+          html += '<div style="margin:0.3rem 0;"><strong style="color:#F4A261;">⚠️ Note:</strong> ' + line.replace(/⚠️\s*Note:\s*/i,'') + '</div>';
+        } else if (line === '---') {
+          html += '<hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:1rem 0;">';
+        } else {
+          html += '<div style="margin:0.2rem 0;">' + line + '</div>';
+        }
+      });
+
+      content.innerHTML = html;
+      resultDiv.style.display = 'block';
+
+    } catch(err) {
+      content.innerHTML = '<span style="color:#fca5a5;">Something went wrong. Please try again.</span>';
+      resultDiv.style.display = 'block';
+    }
+
+    btn.textContent = '🔄 Find Substitutes';
+    btn.disabled = false;
+  }
+
+  document.getElementById('subIngredient').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') getSubstitutes();
+  });
+</script>
+
+</body>
+</html>

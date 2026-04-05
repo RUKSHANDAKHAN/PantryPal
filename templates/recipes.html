@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recipe Collection – Pantry Pal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green-deep:#1B4332; --green-mid:#2D6A4F; --green-fresh:#52B788;
+      --cream:#FEFAE0; --gold:#E9C46A; --white:#FFFFFF;
+      --text:#1A1A2E; --muted:#6B7280; --border:#D8F3DC;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--cream); font-family:'DM Sans',sans-serif; color:var(--text); }
+
+    nav {
+      background:var(--green-deep); padding:0 2rem; height:68px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:100;
+      box-shadow:0 2px 20px rgba(0,0,0,0.2);
+    }
+    .nav-logo { font-family:'Playfair Display',serif; font-size:1.5rem; color:var(--green-fresh); text-decoration:none; }
+    .nav-logo span { color:var(--gold); }
+    .nav-links { display:flex; gap:0.5rem; align-items:center; }
+    .nav-links a {
+      color:#a8d8b9; text-decoration:none;
+      padding:0.45rem 0.9rem; border-radius:8px;
+      font-size:0.88rem; font-weight:500; transition:all 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { background:rgba(82,183,136,0.15); color:var(--green-fresh); }
+    .nav-links .nav-cta { background:var(--green-fresh); color:var(--green-deep); font-weight:700; }
+    .nav-links .nav-cta:hover { background:#74c69d; }
+
+    .page-hero {
+      background:linear-gradient(135deg, var(--green-deep), var(--green-mid));
+      padding:3rem 2rem 2.5rem; text-align:center;
+    }
+    .page-hero h1 { font-family:'Playfair Display',serif; font-size:2.2rem; color:var(--white); margin-bottom:0.5rem; }
+    .page-hero p { color:#b7e4c7; font-size:0.95rem; margin-bottom:1.5rem; }
+
+    .search-wrap { display:flex; justify-content:center; }
+    .search-wrap form {
+      display:flex; width:100%; max-width:500px;
+      background:white; border-radius:50px; overflow:hidden;
+      box-shadow:0 4px 20px rgba(0,0,0,0.3);
+    }
+    .search-wrap input {
+      flex:1; border:none; padding:0.85rem 1.5rem;
+      font-size:0.95rem; font-family:'DM Sans',sans-serif; outline:none;
+    }
+    .search-wrap button {
+      background:var(--green-fresh); border:none; padding:0 1.5rem;
+      color:white; font-size:1.1rem; cursor:pointer;
+    }
+
+    .cuisine-tabs {
+      display:flex; justify-content:center; gap:0.75rem;
+      padding:1.5rem 1rem; background:#f9fafb;
+      border-bottom:1px solid var(--border); flex-wrap:wrap;
+    }
+    .tab {
+      text-decoration:none; padding:0.55rem 1.4rem;
+      border-radius:50px; font-size:0.9rem; font-weight:700;
+      border:2px solid var(--border); color:var(--muted);
+      background:white; transition:all 0.2s;
+    }
+    .tab:hover { border-color:var(--green-fresh); color:var(--green-fresh); }
+    .tab.active { background:var(--green-fresh); border-color:var(--green-fresh); color:white; }
+
+    .container { max-width:1200px; margin:0 auto; padding:2rem 1.5rem; }
+
+    .section-title {
+      font-family:'Playfair Display',serif; font-size:1.4rem;
+      color:var(--muted); margin-bottom:1.5rem;
+      display:flex; align-items:center; gap:0.75rem;
+    }
+    .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
+      gap:1.5rem;
+    }
+
+    .card {
+      background:var(--white); border:1px solid var(--border);
+      border-radius:14px; overflow:hidden;
+      transition:transform 0.2s, box-shadow 0.2s;
+      animation:fadeUp 0.4s ease both;
+      display:flex; flex-direction:column;
+    }
+    .card:hover { transform:translateY(-5px); box-shadow:0 12px 30px rgba(0,0,0,0.1); }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .card:nth-child(1){animation-delay:0.05s}
+    .card:nth-child(2){animation-delay:0.10s}
+    .card:nth-child(3){animation-delay:0.15s}
+    .card:nth-child(4){animation-delay:0.20s}
+    .card:nth-child(5){animation-delay:0.25s}
+    .card:nth-child(6){animation-delay:0.30s}
+
+    .card-banner { height:8px; }
+    .card-banner.indian      { background:linear-gradient(90deg,#E8750A,#F5A623); }
+    .card-banner.chinese     { background:linear-gradient(90deg,#c0392b,#e74c3c); }
+    .card-banner.italian     { background:linear-gradient(90deg,#2980b9,#3498db); }
+    .card-banner.continental { background:linear-gradient(90deg,#27ae60,#2ecc71); }
+    .card-banner.default     { background:linear-gradient(90deg,var(--green-fresh),var(--gold)); }
+
+    .card-body { padding:1.25rem 1.4rem 1rem; flex:1; }
+    .card-emoji { font-size:2rem; margin-bottom:0.6rem; display:block; }
+
+    .cuisine-badge {
+      display:inline-block; padding:0.2rem 0.7rem;
+      border-radius:50px; font-size:0.72rem; font-weight:700;
+      margin-bottom:0.7rem; letter-spacing:0.5px;
+    }
+    .badge-indian      { background:#FFF3E0; color:#E8750A; }
+    .badge-chinese     { background:#FFEBEE; color:#c0392b; }
+    .badge-italian     { background:#EBF5FB; color:#2980b9; }
+    .badge-continental { background:#E8F5E9; color:#27ae60; }
+    .badge-default     { background:#F0FDF4; color:var(--green-mid); }
+
+    .card h2 {
+      font-family:'Playfair Display',serif; font-size:1.15rem;
+      margin-bottom:0.5rem; color:var(--text);
+    }
+
+    .ingredients-preview {
+      font-size:0.82rem; color:#7a5c35; line-height:1.5;
+      display:-webkit-box; -webkit-line-clamp:2;
+      -webkit-box-orient:vertical; overflow:hidden; margin-bottom:1.2rem;
+    }
+
+    /* CARD ACTIONS — only 3 buttons, clean row */
+    .card-actions {
+      display:flex; gap:0.5rem;
+      border-top:1px solid var(--border);
+      padding:0.9rem 1.4rem;
+    }
+    .btn-view {
+      flex:1; background:var(--green-deep); color:var(--green-fresh);
+      text-decoration:none; text-align:center; padding:0.55rem;
+      border-radius:8px; font-size:0.83rem; font-weight:700;
+      transition:background 0.2s;
+    }
+    .btn-view:hover { background:var(--green-mid); }
+    .btn-fav {
+      background:#FFF0F5; color:#E84393;
+      border:1px solid #f5c2d8;
+      padding:0.55rem 0.75rem; border-radius:8px;
+      font-size:0.9rem; text-decoration:none;
+      transition:background 0.2s; line-height:1;
+      display:flex; align-items:center;
+    }
+    .btn-fav:hover { background:#fde0ec; }
+    .btn-fav.active { background:#fde0ec; }
+    .btn-delete {
+      background:#FFF0EC; color:#c0392b;
+      border:1px solid #f5c6c2;
+      padding:0.55rem 0.75rem; border-radius:8px;
+      font-size:0.9rem; font-weight:700;
+      text-decoration:none; transition:background 0.2s;
+      display:flex; align-items:center;
+    }
+    .btn-delete:hover { background:#fde0dc; }
+
+    .empty { text-align:center; padding:4rem 2rem; color:var(--muted); }
+    .empty .big { font-size:3.5rem; margin-bottom:1rem; }
+    .empty h3 { font-family:'Playfair Display',serif; font-size:1.4rem; margin-bottom:0.5rem; }
+
+    footer {
+      text-align:center; padding:1.5rem; color:var(--muted);
+      font-size:0.8rem; border-top:1px solid var(--border); margin-top:2rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">🥬 Pantry<span>Pal</span></a>
+  <div class="nav-links">
+    `<a href="/">🏠 Home</a>
+    <a href="/pantry">🧺 My Pantry</a>
+    <a href="/planner">📅 Meal Planner</a>
+    <a href="/expiry">⏰ Expiry Tracker</a>
+    <a href="/recipes" class="active">📖 Recipes</a>
+    <a href="/favorites">❤️ Favourites</a>
+    <a href="/gallery">📸 My Gallery</a>
+    <a href="/add" class="nav-cta">+ Add Recipe</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>📖 Recipe Collection</h1>
+  <p>Browse {{ recipes|length }} recipes across Indian, Chinese, Italian and Continental cuisines</p>
+  <div class="search-wrap">
+    <form action="/recipes" method="GET">
+      <input type="hidden" name="cuisine" value="{{ selected_cuisine }}"/>
+      <input type="text" name="q" placeholder="Search recipes..." value="{{ query }}"/>
+      <button type="submit">🔍</button>
+    </form>
+  </div>
+</div>
+
+<div class="cuisine-tabs">
+  <a href="/recipes?cuisine=All"          class="tab {% if selected_cuisine == 'All' %}active{% endif %}">🌐 All</a>
+  <a href="/recipes?cuisine=Indian"       class="tab {% if selected_cuisine == 'Indian' %}active{% endif %}">🇮🇳 Indian</a>
+  <a href="/recipes?cuisine=Chinese"      class="tab {% if selected_cuisine == 'Chinese' %}active{% endif %}">🇨🇳 Chinese</a>
+  <a href="/recipes?cuisine=Italian"      class="tab {% if selected_cuisine == 'Italian' %}active{% endif %}">🇮🇹 Italian</a>
+  <a href="/recipes?cuisine=Continental"  class="tab {% if selected_cuisine == 'Continental' %}active{% endif %}">🌍 Continental</a>
+</div>
+
+<div class="container">
+
+  <div class="section-title">
+    {% if selected_cuisine == 'All' %}All Recipes ({{ recipes|length }})
+    {% else %}{{ selected_cuisine }} Recipes ({{ recipes|length }}){% endif %}
+  </div>
+
+  {% if recipes %}
+  <div class="grid">
+    {% for recipe in recipes %}
+
+      {% set cuisine = recipe.cuisine if recipe.cuisine else 'Other' %}
+
+      {% if cuisine == 'Chinese' %}
+        {% set emoji = ["🥡","🍜","🥟","🍱","🥢","🍚","🫕","🍲","🥘","🍛"][loop.index0 % 10] %}
+        {% set banner = "chinese" %} {% set badge = "badge-chinese" %}
+      {% elif cuisine == 'Continental' %}
+        {% set emoji = ["🍝","🥩","🍕","🥗","🍣","🥐","🫕","🍲","🥘","🍱"][loop.index0 % 10] %}
+        {% set banner = "continental" %} {% set badge = "badge-continental" %}
+      {% elif cuisine == 'Italian' %}
+        {% set emoji = ["🍕","🍝","🥖","🧀","🫕","🍷","🥗","🍮","🫙","🍞"][loop.index0 % 10] %}
+        {% set banner = "italian" %} {% set badge = "badge-italian" %}
+      {% elif cuisine == 'Indian' %}
+        {% set emoji = ["🍛","🥘","🍲","🫕","🥗","🌮","🥙","🍜","🫓","🧆"][loop.index0 % 10] %}
+        {% set banner = "indian" %} {% set badge = "badge-indian" %}
+      {% else %}
+        {% set emoji = "🍽️" %}
+        {% set banner = "default" %} {% set badge = "badge-default" %}
+      {% endif %}
+
+      <div class="card">
+        <div class="card-banner {{ banner }}"></div>
+        <div class="card-body">
+          <span class="card-emoji">{{ emoji }}</span>
+          <span class="cuisine-badge {{ badge }}">{{ cuisine }}</span>
+          <h2>{{ recipe.title }}</h2>
+          <div class="ingredients-preview">
+            {% if recipe.ingredients is iterable and recipe.ingredients is not string %}
+              {{ recipe.ingredients | join(', ') }}
+            {% else %}
+              {{ recipe.ingredients }}
+            {% endif %}
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="/recipe/{{ recipe._id }}" class="btn-view">👁 View Recipe</a>
+          {% if fav_ids is defined and recipe._id|string in fav_ids %}
+            <a href="/favorites/remove/{{ recipe._id }}" class="btn-fav active" title="Remove from favourites">💔</a>
+          {% else %}
+            <a href="/favorites/add/{{ recipe._id }}" class="btn-fav" title="Add to favourites">❤️</a>
+          {% endif %}
+          <a href="/delete/{{ recipe._id }}" class="btn-delete"
+             onclick="return confirm('Delete {{ recipe.title }}?')">🗑</a>
+        </div>
+      </div>
+
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty">
+    <div class="big">🍽️</div>
+    <h3>No recipes found</h3>
+    <p>Try a different filter or <a href="/add" style="color:var(--green-fresh)">add a new recipe</a></p>
+  </div>
+  {% endif %}
+
+</div>
+
+<footer>🥬 Pantry Pal — Your AI Cooking Assistant &nbsp;|&nbsp; Made with 💚</footer>
+
+</body>
+</html>

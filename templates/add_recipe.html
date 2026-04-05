@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Recipe – My Cookbook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --saffron: #E8750A; --turmeric: #F5A623; --cream: #FDF6EC;
+      --dark: #1A0F00; --card-bg: #FFFAF3; --muted: #8B6F47; --border: #F0DFC0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--cream); font-family: 'Lato', sans-serif; color: var(--dark); }
+
+    header {
+      background: var(--dark); padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 70px; border-bottom: 3px solid var(--saffron);
+    }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--turmeric); text-decoration: none; }
+    .logo span { color: var(--saffron); }
+    .back-btn { color: #c9a87a; text-decoration: none; font-size: 0.9rem; }
+    .back-btn:hover { color: var(--turmeric); }
+
+    .page-wrap {
+      max-width: 680px; margin: 2.5rem auto; padding: 0 1.5rem 3rem;
+      animation: fadeUp 0.4s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-title { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 0.3rem; }
+    .page-subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+
+    .form-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .form-card-header { background: var(--dark); padding: 1rem 1.5rem; color: var(--turmeric); font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+
+    .form-body { padding: 1.8rem; display: flex; flex-direction: column; gap: 1.4rem; }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.45rem; }
+    label { font-size: 0.85rem; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+    label span { color: var(--saffron); margin-right: 0.3rem; }
+
+    input[type="text"], textarea, select {
+      background: white; border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 0.75rem 1rem; font-size: 0.95rem; font-family: 'Lato', sans-serif;
+      color: var(--dark); outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(232,117,10,0.12);
+    }
+    textarea { resize: vertical; }
+    .hint { font-size: 0.78rem; color: #b09070; font-style: italic; }
+
+    /* Cuisine selector cards */
+    .cuisine-options { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .cuisine-option input[type="radio"] { display: none; }
+    .cuisine-option label {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.65rem 1.2rem; border-radius: 50px; border: 2px solid var(--border);
+      background: white; cursor: pointer; font-size: 0.9rem;
+      font-weight: 700; color: var(--muted); text-transform: none;
+      letter-spacing: 0; transition: all 0.2s;
+    }
+    .cuisine-option input[type="radio"]:checked + label {
+      border-color: var(--saffron); background: var(--saffron); color: white;
+    }
+    .cuisine-option label:hover { border-color: var(--saffron); color: var(--saffron); }
+
+    .form-footer {
+      padding: 1.2rem 1.8rem; border-top: 1px solid var(--border);
+      display: flex; gap: 1rem; background: #fdf3e3;
+    }
+    .btn-submit {
+      background: var(--saffron); color: white; border: none;
+      padding: 0.75rem 2rem; border-radius: 8px; font-size: 0.95rem;
+      font-weight: 700; font-family: 'Lato', sans-serif; cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-submit:hover { background: #cf6409; transform: translateY(-1px); }
+    .btn-cancel {
+      background: transparent; color: var(--muted); border: 1.5px solid var(--border);
+      padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 0.95rem;
+      font-family: 'Lato', sans-serif; text-decoration: none; font-weight: 700;
+    }
+    .btn-cancel:hover { border-color: var(--muted); color: var(--dark); }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo">🍲 My <span>Cookbook</span></a>
+  <a href="/" class="back-btn">← Back to Recipes</a>
+</header>
+
+<div class="page-wrap">
+  <h1 class="page-title">✍️ Add a New Recipe</h1>
+  <p class="page-subtitle">Share your favourite dish with the cookbook</p>
+
+  <div class="form-card">
+    <div class="form-card-header">📋 Recipe Details</div>
+    <form method="POST" action="/add">
+      <div class="form-body">
+
+        <div class="form-group">
+          <label><span>🍽</span> Recipe Title</label>
+          <input type="text" name="title" placeholder="e.g. Butter Chicken, Fried Rice, Pasta..." required/>
+        </div>
+
+        <!-- CUISINE SELECTOR -->
+        <div class="form-group">
+          <label><span>🌐</span> Cuisine Type</label>
+          <div class="cuisine-options">
+            <div class="cuisine-option">
+              <input type="radio" name="cuisine" id="indian" value="Indian" checked/>
+              <label for="indian">🇮🇳 Indian</label>
+            </div>
+            <div class="cuisine-option">
+              <input type="radio" name="cuisine" id="chinese" value="Chinese"/>
+              <label for="chinese">🇨🇳 Chinese</label>
+            </div>
+            <div class="cuisine-option">
+              <input type="radio" name="cuisine" id="continental" value="Continental"/>
+              <label for="continental">🌍 Continental</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label><span>🧂</span> Ingredients</label>
+          <textarea name="ingredients" rows="4" placeholder="e.g. 500g chicken, 2 tbsp butter, 1 cup sauce..." required></textarea>
+          <span class="hint">Separate each ingredient with a comma ( , )</span>
+        </div>
+
+        <div class="form-group">
+          <label><span>👨‍🍳</span> Cooking Steps</label>
+          <textarea name="steps" rows="7" placeholder="1. Marinate for 30 mins.&#10;2. Heat butter in a pan...&#10;3. Add spices and cook..." required></textarea>
+          <span class="hint">Write each step on a new line for best display</span>
+        </div>
+
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn-submit">🍲 Save Recipe</button>
+        <a href="/" class="btn-cancel">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

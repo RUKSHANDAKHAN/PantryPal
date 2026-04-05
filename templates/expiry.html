@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expiry Tracker – Pantry Pal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green-deep:#1B4332; --green-mid:#2D6A4F; --green-fresh:#52B788;
+      --cream:#FEFAE0; --gold:#E9C46A; --white:#FFFFFF;
+      --text:#1A1A2E; --muted:#6B7280; --border:#D8F3DC;
+      --red:#E76F51; --orange:#F4A261; --yellow:#E9C46A;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--cream); font-family:'DM Sans',sans-serif; color:var(--text); }
+
+    nav {
+      background:var(--green-deep); padding:0 2rem; height:68px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:100;
+    }
+    .nav-logo { font-family:'Playfair Display',serif; font-size:1.5rem; color:var(--green-fresh); text-decoration:none; }
+    .nav-logo span { color:var(--gold); }
+    .nav-links { display:flex; gap:0.5rem; }
+    .nav-links a { color:#a8d8b9; text-decoration:none; padding:0.4rem 0.85rem; border-radius:8px; font-size:0.88rem; }
+    .nav-links a:hover, .nav-links a.active { background:rgba(82,183,136,0.15); color:var(--green-fresh); }
+
+    .page-hero {
+      background:linear-gradient(135deg, var(--green-deep), #3a5a40);
+      padding:3rem 2rem 2.5rem; text-align:center;
+    }
+    .page-hero h1 { font-family:'Playfair Display',serif; font-size:2.2rem; color:var(--white); margin-bottom:0.5rem; }
+    .page-hero p { color:#b7e4c7; font-size:0.95rem; }
+
+    .container { max-width:960px; margin:2.5rem auto; padding:0 1.5rem 4rem; }
+
+    /* ADD FORM */
+    .add-card {
+      background:var(--white); border-radius:18px; overflow:hidden;
+      border:1px solid var(--border); margin-bottom:2.5rem;
+      box-shadow:0 4px 20px rgba(0,0,0,0.06);
+    }
+    .add-header {
+      background:var(--green-deep); padding:1rem 1.5rem;
+      color:var(--green-fresh); font-family:'Playfair Display',serif; font-size:1.1rem;
+    }
+    .add-body {
+      padding:1.5rem;
+      display:grid; grid-template-columns:2fr 1fr 1fr auto;
+      gap:1rem; align-items:end;
+    }
+    @media(max-width:640px) { .add-body { grid-template-columns:1fr; } }
+
+    label { font-size:0.78rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.35rem; }
+    input {
+      width:100%; background:#f9fafb; border:1.5px solid var(--border);
+      border-radius:10px; padding:0.7rem 0.9rem; font-size:0.9rem;
+      font-family:'DM Sans',sans-serif; color:var(--text); outline:none;
+      transition:border-color 0.2s;
+    }
+    input:focus { border-color:var(--green-fresh); background:var(--white); }
+    .btn-add {
+      background:var(--green-fresh); color:var(--green-deep);
+      border:none; padding:0.72rem 1.5rem; border-radius:10px;
+      font-weight:700; font-size:0.9rem; cursor:pointer;
+      white-space:nowrap; transition:background 0.2s;
+    }
+    .btn-add:hover { background:#74c69d; }
+
+    /* SUMMARY PILLS */
+    .summary-row {
+      display:flex; gap:1rem; margin-bottom:2rem; flex-wrap:wrap;
+    }
+    .summary-pill {
+      padding:0.6rem 1.2rem; border-radius:50px;
+      font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:0.5rem;
+    }
+    .pill-urgent  { background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; }
+    .pill-warning { background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; }
+    .pill-good    { background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0; }
+    .pill-expired { background:#F3F4F6; color:#6B7280; border:1px solid #E5E7EB; }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-family:'Playfair Display',serif; font-size:1.1rem;
+      margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;
+    }
+
+    /* ITEMS LIST */
+    .items-list { display:flex; flex-direction:column; gap:0.75rem; margin-bottom:2rem; }
+
+    .item-row {
+      background:var(--white); border-radius:12px;
+      padding:1rem 1.2rem;
+      display:flex; align-items:center; justify-content:space-between;
+      border:1px solid var(--border);
+      transition:transform 0.15s;
+      animation:fadeUp 0.3s ease;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .item-row:hover { transform:translateX(3px); }
+
+    .item-row.urgent  { border-left:4px solid #EF4444; }
+    .item-row.warning { border-left:4px solid #F59E0B; }
+    .item-row.good    { border-left:4px solid var(--green-fresh); }
+    .item-row.expired { border-left:4px solid #9CA3AF; opacity:0.7; }
+
+    .item-name { font-weight:700; font-size:0.95rem; }
+    .item-qty  { font-size:0.82rem; color:var(--muted); }
+
+    .item-badge {
+      padding:0.25rem 0.8rem; border-radius:50px; font-size:0.75rem; font-weight:700;
+    }
+    .badge-urgent  { background:#FEE2E2; color:#B91C1C; }
+    .badge-warning { background:#FEF3C7; color:#92400E; }
+    .badge-good    { background:#D1FAE5; color:#065F46; }
+    .badge-expired { background:#F3F4F6; color:#6B7280; }
+
+    .item-date { font-size:0.8rem; color:var(--muted); }
+
+    .item-actions { display:flex; gap:0.5rem; align-items:center; }
+    .btn-delete-item {
+      background:#FEE2E2; color:#B91C1C; border:none;
+      width:32px; height:32px; border-radius:8px; cursor:pointer;
+      font-size:0.9rem; display:flex; align-items:center; justify-content:center;
+      text-decoration:none; transition:background 0.2s;
+    }
+    .btn-delete-item:hover { background:#FECACA; }
+
+    /* AI SUGGEST URGENT */
+    .urgent-ai-bar {
+      background:linear-gradient(135deg, #FEF3C7, #FDE68A);
+      border:1px solid #F59E0B; border-radius:14px;
+      padding:1.2rem 1.5rem; margin-bottom:2rem;
+      display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+    }
+    .urgent-ai-bar p { font-size:0.9rem; color:#92400E; }
+    .btn-ai-suggest {
+      background:#F59E0B; color:var(--white); border:none;
+      padding:0.6rem 1.3rem; border-radius:10px; font-weight:700;
+      font-size:0.85rem; cursor:pointer; white-space:nowrap; transition:background 0.2s;
+    }
+    .btn-ai-suggest:hover { background:#D97706; }
+
+    /* AI RESULT MODAL */
+    .ai-result-box {
+      background:var(--white); border:1px solid var(--green-fresh);
+      border-radius:14px; padding:1.5rem; margin-top:1rem;
+      white-space:pre-wrap; font-size:0.9rem; line-height:1.8;
+      color:#374151; display:none; animation:fadeUp 0.4s ease;
+    }
+
+    .empty-state { text-align:center; padding:3rem; color:var(--muted); }
+    .empty-state .big { font-size:3rem; margin-bottom:0.75rem; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">🥬 Pantry<span>Pal</span></a>
+  <div class="nav-links">
+    <a href="/">🏠 Home</a>
+    <a href="/pantry">🧺 My Pantry</a>
+    <a href="/planner">📅 Meal Planner</a>
+    <a href="/expiry" class="active">⏰ Expiry Tracker</a>
+    <a href="/recipes">📖 Recipes</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>⏰ Expiry Tracker</h1>
+  <p>Track your ingredients and get AI alerts before food goes to waste</p>
+</div>
+
+<div class="container">
+
+  <!-- ADD FORM -->
+  <div class="add-card">
+    <div class="add-header">➕ Add Ingredient to Tracker</div>
+    <form method="POST" action="/expiry/add">
+      <div class="add-body">
+        <div>
+          <label>Ingredient Name</label>
+          <input type="text" name="name" placeholder="e.g. Milk, Eggs, Chicken..." required/>
+        </div>
+        <div>
+          <label>Quantity</label>
+          <input type="text" name="quantity" placeholder="e.g. 500ml, 6 pcs"/>
+        </div>
+        <div>
+          <label>Expiry Date</label>
+          <input type="date" name="expiry_date" required/>
+        </div>
+        <div>
+          <button type="submit" class="btn-add">+ Add</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- SUMMARY PILLS -->
+  {% set urgent_items  = categorized.urgent %}
+  {% set warning_items = categorized.warning %}
+  {% set good_items    = categorized.good %}
+  {% set expired_items = categorized.expired %}
+
+  <div class="summary-row">
+    <div class="summary-pill pill-urgent">🚨 {{ urgent_items|length }} Expiring in 3 days</div>
+    <div class="summary-pill pill-warning">⚠️ {{ warning_items|length }} Expiring this week</div>
+    <div class="summary-pill pill-good">✅ {{ good_items|length }} Fresh</div>
+    <div class="summary-pill pill-expired">💀 {{ expired_items|length }} Expired</div>
+  </div>
+
+  <!-- URGENT AI BAR -->
+  {% if urgent_items %}
+  {% set urgent_names = urgent_items | map(attribute='name') | join(', ') %}
+  <div class="urgent-ai-bar">
+    <p>🚨 <strong>{{ urgent_items|length }} item(s) expiring very soon:</strong> {{ urgent_names }} — Get AI recipe suggestions to use them today!</p>
+    <button class="btn-ai-suggest" onclick="getAISuggestions('{{ urgent_names }}')">🤖 Get Recipes for Expiring Items</button>
+  </div>
+  <div class="ai-result-box" id="aiResultBox"></div>
+  {% endif %}
+
+  <!-- URGENT ITEMS -->
+  {% if urgent_items %}
+  <div class="section-title">🚨 Use Today or Tomorrow</div>
+  <div class="items-list">
+    {% for item in urgent_items %}
+    <div class="item-row urgent">
+      <div>
+        <div class="item-name">{{ item.name }}</div>
+        <div class="item-qty">{{ item.quantity }}</div>
+      </div>
+      <span class="item-badge badge-urgent">
+        {% if item.days_left == 0 %}Expires TODAY
+        {% elif item.days_left == 1 %}Expires TOMORROW
+        {% else %}{{ item.days_left }} days left{% endif %}
+      </span>
+      <div class="item-actions">
+        <div class="item-date">{{ item.exp_formatted }}</div>
+        <a href="/expiry/delete/{{ item._id }}" class="btn-delete-item" title="Remove">🗑</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- WARNING ITEMS -->
+  {% if warning_items %}
+  <div class="section-title">⚠️ Expiring This Week</div>
+  <div class="items-list">
+    {% for item in warning_items %}
+    <div class="item-row warning">
+      <div>
+        <div class="item-name">{{ item.name }}</div>
+        <div class="item-qty">{{ item.quantity }}</div>
+      </div>
+      <span class="item-badge badge-warning">{{ item.days_left }} days left</span>
+      <div class="item-actions">
+        <div class="item-date">{{ item.exp_formatted }}</div>
+        <a href="/expiry/delete/{{ item._id }}" class="btn-delete-item">🗑</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- GOOD ITEMS -->
+  {% if good_items %}
+  <div class="section-title">✅ Fresh & Good</div>
+  <div class="items-list">
+    {% for item in good_items %}
+    <div class="item-row good">
+      <div>
+        <div class="item-name">{{ item.name }}</div>
+        <div class="item-qty">{{ item.quantity }}</div>
+      </div>
+      <span class="item-badge badge-good">{{ item.days_left }} days left</span>
+      <div class="item-actions">
+        <div class="item-date">{{ item.exp_formatted }}</div>
+        <a href="/expiry/delete/{{ item._id }}" class="btn-delete-item">🗑</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- EXPIRED ITEMS -->
+  {% if expired_items %}
+  <div class="section-title">💀 Expired — Please Discard</div>
+  <div class="items-list">
+    {% for item in expired_items %}
+    <div class="item-row expired">
+      <div>
+        <div class="item-name" style="text-decoration:line-through">{{ item.name }}</div>
+        <div class="item-qty">{{ item.quantity }}</div>
+      </div>
+      <span class="item-badge badge-expired">Expired {{ item.days_left | abs }} days ago</span>
+      <div class="item-actions">
+        <div class="item-date">{{ item.exp_formatted }}</div>
+        <a href="/expiry/delete/{{ item._id }}" class="btn-delete-item">🗑</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not urgent_items and not warning_items and not good_items and not expired_items %}
+  <div class="empty-state">
+    <div class="big">📦</div>
+    <h3 style="font-family:'Playfair Display',serif; margin-bottom:0.5rem;">No items tracked yet</h3>
+    <p>Add ingredients above to start tracking their expiry dates</p>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+async function getAISuggestions(items) {
+  const box = document.getElementById('aiResultBox');
+  box.style.display = 'block';
+  box.textContent = '⏳ AI is generating recipes for your expiring items...';
+
+  const formData = new FormData();
+  formData.append('items', items);
+
+  try {
+    const res = await fetch('/expiry/suggest', { method: 'POST', body: formData });
+    const data = await res.json();
+    box.textContent = data.suggestions;
+  } catch (e) {
+    box.textContent = 'Error connecting to AI. Please check your API key.';
+  }
+}
+</script>
+
+</body>
+</html>

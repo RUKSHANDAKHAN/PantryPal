@@ -26,3 +26,5 @@ Rukshanda Khan
 
 ## 📌 Note
 Make sure your API key is kept safe and not uploaded to GitHub.
+
+updated project

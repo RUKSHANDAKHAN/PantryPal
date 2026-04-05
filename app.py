@@ -10,7 +10,7 @@ import io
 import os
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
-load_dotenv()
+
 
 
 app = Flask(__name__)
@@ -36,8 +36,9 @@ gallery_col = db["gallery"]
 chat_messages = db["chat_messages"]
 
 # ── Groq AI ──────────────────────────────────────────────
+load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-groq_client = Groq(api_key=GROQ_API_KEY)
+groq_client = Groq(api_key=api_key)
 
 def ask_claude(prompt):
     response = groq_client.chat.completions.create(

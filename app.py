@@ -26,8 +26,13 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ── MongoDB ──────────────────────────────────────────────
-client_db = MongoClient("mongodb://localhost:27017/")
-db = client_db["cookbook_db"]
+
+MONGO_URI = os.getenv("MONGO_URI")
+if not MONGO_URI:
+    raise ValueError("MongoDB URI is missing. Please set MONGO_URI in environment variables.")
+
+client_db = MongoClient(MONGO_URI)
+db = client_db["cookbook_db"]  # same database name
 recipes = db["recipes"]
 expiry_items = db["expiry_items"]
 users = db["users"]

@@ -28,7 +28,7 @@ def allowed_file(filename):
 
 # ── MongoDB ──────────────────────────────────────────────
 
-
+load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
@@ -36,11 +36,9 @@ if not MONGO_URI:
 
 try:
     client_db = MongoClient(
-        MONGO_URI,
-        tls=True,                    # enforce TLS/SSL
-        tlsAllowInvalidCertificates=False,  # strict SSL check
-        serverSelectionTimeoutMS=10000     # 10 seconds timeout for connection
-    )
+    MONGO_URI,
+    serverSelectionTimeoutMS=10000
+)
     # Test connection
     client_db.admin.command('ping')
     print("MongoDB connected successfully!")
@@ -57,7 +55,7 @@ gallery_col = db["gallery"]
 chat_messages = db["chat_messages"]
 
 # ── Groq AI ──────────────────────────────────────────────
-load_dotenv()
+
 api_key = os.getenv("GROQ_API_KEY")
 
 if not api_key:

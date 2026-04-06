@@ -29,10 +29,16 @@ def allowed_file(filename):
 
 MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
-    raise ValueError("MongoDB URI is missing. Please set MONGO_URI in environment variables.")
+    raise ValueError("MongoDB URI is missing! Please set MONGO_URI in environment variable.")
 
-client_db = MongoClient(MONGO_URI)
-db = client_db["cookbook_db"]  # same database name
+# Force TLS connection
+client_db = MongoClient(
+    MONGO_URI,
+    tls=True,                      # ensures TLS is used
+    tlsAllowInvalidCertificates=False  # strict SSL check; set True only for testing
+)
+
+db = client_db["cookbook_db"]
 recipes = db["recipes"]
 expiry_items = db["expiry_items"]
 users = db["users"]

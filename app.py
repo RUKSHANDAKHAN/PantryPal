@@ -10,6 +10,7 @@ import io
 import os
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+from pymongo.errors import ServerSelectionTimeoutError
 
 
 
@@ -27,16 +28,25 @@ def allowed_file(filename):
 
 # ── MongoDB ──────────────────────────────────────────────
 
+
+
 MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
-    raise ValueError("MongoDB URI is missing! Please set MONGO_URI in environment variable.")
+    raise ValueError("MongoDB URI is missing! Please set MONGO_URI in environment variables.")
 
-# Force TLS connection
-client_db = MongoClient(
-    MONGO_URI,
-    tls=True,                      # ensures TLS is used
-    tlsAllowInvalidCertificates=False  # strict SSL check; set True only for testing
-)
+try:
+    client_db = MongoClient(
+        MONGO_URI,
+        tls=True,                    # enforce TLS/SSL
+        tlsAllowInvalidCertificates=False,  # strict SSL check
+        serverSelectionTimeoutMS=10000     # 10 seconds timeout for connection
+    )
+    # Test connection
+    client_db.admin.command('ping')
+    print("MongoDB connected successfully!")
+except ServerSelectionTimeoutError as err:
+    print("MongoDB connection failed:", err)
+    raise
 
 db = client_db["cookbook_db"]
 recipes = db["recipes"]

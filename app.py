@@ -428,6 +428,7 @@ def delete_recipe(id):
     return redirect(url_for('recipes_page'))
 
 @app.route('/recipe/<id>/nutrition')
+@login_required
 def recipe_nutrition(id):
     recipe = recipes.find_one({"_id": ObjectId(id)})
     if not recipe:
@@ -464,12 +465,15 @@ Reply ONLY in this exact JSON format, no extra text:
 
 # ── GALLERY ──────────────────────────────────────────────
 @app.route('/gallery')
+@login_required
 def gallery_page():
+
     photos = list(gallery_col.find().sort("_id", -1))
     all_recipes = list(recipes.find({}, {"title": 1}))
     return render_template('gallery.html', photos=photos, recipes=all_recipes)
 
 @app.route('/gallery/upload', methods=['POST'])
+@login_required
 def gallery_upload():
     if 'photo' not in request.files:
         return redirect(url_for('gallery_page'))
@@ -493,6 +497,7 @@ def gallery_upload():
     return redirect(url_for('gallery_page'))
 
 @app.route('/gallery/delete/<id>')
+@login_required
 def gallery_delete(id):
     photo = gallery_col.find_one({"_id": ObjectId(id)})
     if photo:
@@ -503,6 +508,7 @@ def gallery_delete(id):
     return redirect(url_for('gallery_page'))
 # ── SMART SUBSTITUTIONS ──────────────────────────────────
 @app.route('/substitute', methods=['POST'])
+@login_required
 def substitute():
     ingredient = request.form.get('ingredient', '')
     dish = request.form.get('dish', '')
@@ -526,10 +532,12 @@ Suggest 3 smart substitutes. For each use exactly this format:
     return jsonify({"result": result})
 
 @app.route('/assistant')
+@login_required
 def assistant():
     return render_template('assistant.html')
 
 @app.route('/assistant/chat', methods=['POST'])
+@login_required
 def assistant_chat():
     message = request.form.get('message', '')
     if not message:

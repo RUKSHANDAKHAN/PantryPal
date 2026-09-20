@@ -3,17 +3,23 @@
 **Your AI Cooking Assistant**: turn whatever is in your kitchen into delicious meals, track expiry dates, and plan your whole week.
 ## 📸 Screenshots
 
-| Home | My Pantry |
-|------|-----------|
-| ![Home](screenshots/home.png) | ![My Pantry](screenshots/pantry.png) |
+## 📸 Screenshots
 
-| Meal Planner | Expiry Tracker |
-|--------------|----------------|
-| ![Meal Planner](screenshots/planner.png) | ![Expiry Tracker](screenshots/expiry.png) |
+| Home | Recipe Collection |
+|------|-------------------|
+| ![Home](screenshots/Home%20page.png) | ![Recipe Collection](screenshots/Recipe%20Collection.png) |
+
+| Meal Planner | Meal Plan Result |
+|--------------|------------------|
+| ![Meal Planner](screenshots/Meal%20planner.png) | ![Meal Plan Result](screenshots/Meal%20planner%20output.png) |
+
+| Expiry Tracker | My Gallery |
+|----------------|------------|
+| ![Expiry Tracker](screenshots/Expiry%20tracker.png) | ![My Gallery](screenshots/My%20gallery.png) |
 
 | Chef Bot |
 |----------|
-| ![Chef Bot](screenshots/chatbot.png) |
+| ![Chef Bot](screenshots/Ai%20chatbot.png) |
 
 🌐 **Live demo:** https://pantrypal-58tf.onrender.com
 

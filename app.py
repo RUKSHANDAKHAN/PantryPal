@@ -63,9 +63,11 @@ if not api_key:
 
 groq_client = Groq(api_key=api_key)
 
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+
 def ask_claude(prompt):
     response = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model=GROQ_MODEL,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=4096
     )

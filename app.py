@@ -15,7 +15,7 @@ from pymongo.errors import ServerSelectionTimeoutError
 
 
 app = Flask(__name__)
-app.secret_key = "pantrypal_secret_key_2024"
+
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -29,6 +29,10 @@ def allowed_file(filename):
 # ── MongoDB ──────────────────────────────────────────────
 
 load_dotenv()
+
+app.secret_key = os.getenv("SECRET_KEY")
+if not app.secret_key:
+    raise ValueError("SECRET_KEY is missing")
 
 MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:

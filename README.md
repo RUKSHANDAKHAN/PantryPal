@@ -5,6 +5,23 @@
 🌐 **Live demo:** https://pantrypal-58tf.onrender.com
 
 > The app is hosted on a free plan, so the first load after a period of inactivity can take up to a minute.
+> ## 📸 Screenshots
+
+| Home | Recipe Collection |
+|------|-------------------|
+| ![Home](screenshots/Home%20page.png) | ![Recipe Collection](screenshots/Recipe%20Collection.png) |
+
+| Meal Planner | Meal Plan Result |
+|--------------|------------------|
+| ![Meal Planner](screenshots/Meal%20planner.png) | ![Meal Plan Result](screenshots/Meal%20planner%20output.png) |
+
+| Expiry Tracker | My Gallery |
+|----------------|------------|
+| ![Expiry Tracker](screenshots/Expiry%20tracker.png) | ![My Gallery](screenshots/My%20gallery.png) |
+
+| Chef Bot |
+|----------|
+| ![Chef Bot](screenshots/Ai%20chatbot.png) |
 
 ---
 
